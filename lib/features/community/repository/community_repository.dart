@@ -79,6 +79,33 @@ class CommunityRepository {
     });
   }
 
+  //add userId in the community members list
+  // FieldValue.arrayUnion adds new element to the map's array
+  FutureVoid joinCommunity(String communityName, String userId) async {
+    try {
+      return right(_communities.doc(communityName).update({
+        'members': FieldValue.arrayUnion([userId])
+      }));
+    } on FirebaseException catch (e) {
+      throw e.message!;
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+ //remove userId in the community members list
+  // FieldValue.arrayRemove removes the element to the map's array
+    FutureVoid leaveCommunity(String communityName, String userId) async {
+    try {
+      return right(_communities.doc(communityName).update({
+        'members': FieldValue.arrayRemove([userId])
+      }));
+    } on FirebaseException catch (e) {
+      throw e.message!;
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
   CollectionReference get _communities =>
       _firestore.collection(FirebaseConstants.communitiesCollection);
 }
