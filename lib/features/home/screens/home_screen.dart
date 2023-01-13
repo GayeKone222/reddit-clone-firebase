@@ -3,15 +3,14 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reddit_clone/features/auth/controller/auth_controller.dart';
+import 'package:reddit_clone/features/home/delegates/search_commuty_delegate.dart';
 import 'package:reddit_clone/features/home/drawers/community_list_drawer.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-
-  void displayDrawer(BuildContext context){
+  void displayDrawer(BuildContext context) {
     Scaffold.of(context).openDrawer();
-
   }
 
   @override
@@ -22,16 +21,19 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('home'),
         centerTitle: false,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () => displayDrawer(context),
-            );
-          }
-        ),
+        leading: Builder(builder: (context) {
+          return IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => displayDrawer(context),
+          );
+        }),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+          IconButton(
+              onPressed: () => showSearch(
+                  context: context, delegate: SearchCommunityDelegate(ref)),
+              icon: const Icon(
+                Icons.search,
+              )),
           IconButton(
               onPressed: () {},
               icon: CircleAvatar(
@@ -39,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
               ))
         ],
       ),
-      drawer: CommunityListDrawer(),
+      drawer: const CommunityListDrawer(),
       body: Center(
         child: Text(user.name),
       ),
