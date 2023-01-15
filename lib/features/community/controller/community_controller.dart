@@ -26,6 +26,13 @@ final userCommunitiesProvider = StreamProvider(
   },
 );
 
+
+
+final searchCommunityProvider = StreamProvider.family((ref, String query) {
+  return ref.watch(communityControllerProvider.notifier).searchCommunity(query);
+});
+
+
 final communityControllerProvider =
     StateNotifierProvider<CommunityController, bool>((ref) {
   final communityRepository = ref.watch(communityRepositoryProvider);
@@ -34,10 +41,6 @@ final communityControllerProvider =
       communityRepository: communityRepository,
       ref: ref,
       storageRepository: storageRepository);
-});
-
-final searchCommunityProvider = StreamProvider.family((ref, String query) {
-  return ref.watch(communityControllerProvider.notifier).searchCommunity(query);
 });
 
 class CommunityController extends StateNotifier<bool> {
