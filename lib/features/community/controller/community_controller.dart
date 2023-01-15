@@ -127,12 +127,22 @@ class CommunityController extends StateNotifier<bool> {
     }
 
     res.fold((l) => showSnackBar(context, l.message), (r) {
-     if(community.members.contains(user.uuid)){
-      showSnackBar(context, 'Community left succesfully');
-     }else{
-       showSnackBar(context, 'community joined succesfully');
-     }
+      if (community.members.contains(user.uuid)) {
+        showSnackBar(context, 'Community left succesfully');
+      } else {
+        showSnackBar(context, 'community joined succesfully');
+      }
     });
+  }
+
+  void addMods(
+      String communityName, List<String> uids, BuildContext context) async {
+    final res = await _communityRepository.addMods(communityName, uids);
+
+    res.fold(
+      (l) => showSnackBar(context, l.message),
+      (r) => Routemaster.of(context).pop(),
+    );
   }
 
   Stream<List<Community>> searchCommunity(String query) {

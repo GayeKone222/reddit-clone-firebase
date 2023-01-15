@@ -92,13 +92,24 @@ class CommunityRepository {
       return left(Failure(e.toString()));
     }
   }
- //remove userId in the community members list
+
+  //remove userId in the community members list
   // FieldValue.arrayRemove removes the element to the map's array
-    FutureVoid leaveCommunity(String communityName, String userId) async {
+  FutureVoid leaveCommunity(String communityName, String userId) async {
     try {
       return right(_communities.doc(communityName).update({
         'members': FieldValue.arrayRemove([userId])
       }));
+    } on FirebaseException catch (e) {
+      throw e.message!;
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  FutureVoid addMods(String communityName, List<String> uids) async {
+    try {
+      return right(_communities.doc(communityName).update({'mods': uids}));
     } on FirebaseException catch (e) {
       throw e.message!;
     } catch (e) {
