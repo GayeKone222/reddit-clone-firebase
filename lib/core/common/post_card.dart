@@ -1,8 +1,11 @@
 import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:reddit_clone/core/common/error_text.dart';
+import 'package:reddit_clone/core/common/loader.dart';
 import 'package:reddit_clone/core/constants/constants.dart';
 import 'package:reddit_clone/features/auth/controller/auth_controller.dart';
+import 'package:reddit_clone/features/community/controller/community_controller.dart';
 import 'package:reddit_clone/features/post/controller/post_controller.dart';
 import 'package:reddit_clone/models/post_model.dart';
 import 'package:reddit_clone/theme/pallete.dart';
@@ -25,16 +28,22 @@ class PostCard extends ConsumerWidget {
     ref.read(postControllerProvider.notifier).downvote(post);
   }
 
-  // void awardPost(WidgetRef ref, String award, BuildContext context) async {
-  //   ref.read(postControllerProvider.notifier).awardPost(post: post, award: award, context: context);
-  // }
+  void awardPost(WidgetRef ref, String award, BuildContext context) async {
+    ref
+        .read(postControllerProvider.notifier)
+        .awardPost(post: post, award: award, context: context);
+  }
 
-  // void navigateToUser(BuildContext context) {
-  //   Routemaster.of(context).push('/u/${post.uid}');
-  // }
+  void navigateToUser(BuildContext context) {
+    Routemaster.of(context).push('/u/${post.userUid}');
+  }
 
   void navigateToCommunity(BuildContext context) {
     Routemaster.of(context).push('/r/${post.communityName}');
+  }
+
+  void navigateToComments(BuildContext context) {
+    Routemaster.of(context).push('/post/${post.id}/comments');
   }
 
   @override
@@ -73,11 +82,14 @@ class PostCard extends ConsumerWidget {
                               Row(
                                 // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  CircleAvatar(
-                                    backgroundImage: NetworkImage(
-                                      post.communityProfilePic,
+                                  GestureDetector(
+                                    onTap: () => navigateToCommunity(context),
+                                    child: CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                        post.communityProfilePic,
+                                      ),
+                                      radius: 16,
                                     ),
-                                    radius: 16,
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(
@@ -93,10 +105,13 @@ class PostCard extends ConsumerWidget {
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold),
                                         ),
-                                        Text(
-                                          'r/${post.userName}',
-                                          style: const TextStyle(
-                                            fontSize: 12,
+                                        GestureDetector(
+                                          onTap: () => navigateToUser(context),
+                                          child: Text(
+                                            'r/${post.userName}',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
                                           ),
                                         )
                                       ],
@@ -113,6 +128,25 @@ class PostCard extends ConsumerWidget {
                                     ))
                             ],
                           ),
+                          if (post.awards.isNotEmpty) ...[
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            SizedBox(
+                              height: 25,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: post.awards.length,
+                                itemBuilder: (context, index) {
+                                  final award = post.awards[index];
+                                  return Image.asset(
+                                    Constants.awards[award]!,
+                                    height: 23,
+                                  );
+                                },
+                              ),
+                            )
+                          ],
                           Padding(
                             padding: const EdgeInsets.only(top: 10),
                             child: Text(
@@ -154,6 +188,7 @@ class PostCard extends ConsumerWidget {
                                       fontWeight: FontWeight.bold)),
                             ),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
@@ -186,7 +221,8 @@ class PostCard extends ConsumerWidget {
                               Row(
                                 children: [
                                   IconButton(
-                                    onPressed: () {},
+                                    onPressed: () =>
+                                        navigateToComments(context),
                                     icon: const Icon(
                                       Icons.comment,
                                     ),
@@ -196,7 +232,70 @@ class PostCard extends ConsumerWidget {
                                     style: const TextStyle(fontSize: 17),
                                   ),
                                 ],
-                              )
+                              ),
+                              ref
+                                  .watch(
+                                    getCommunityByNameProvider(
+                                      post.communityName,
+                                    ),
+                                  )
+                                  .when(
+                                      data: (data) {
+                                        if (data.mods.contains(
+                                          user.uuid,
+                                        )) {
+                                          return IconButton(
+                                            onPressed: () =>
+                                                deletePost(ref, context),
+                                            icon: const Icon(
+                                              Icons.admin_panel_settings,
+                                            ),
+                                          );
+                                        }
+                                        return const SizedBox();
+                                      },
+                                      error: (error, stackTrace) =>
+                                          ErrorText(error: error.toString()),
+                                      loading: () => const Loader()),
+                              IconButton(
+                                  onPressed: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => Dialog(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(20),
+                                                child: GridView.builder(
+                                                  shrinkWrap: true,
+                                                  itemCount: user.awards.length,
+                                                  gridDelegate:
+                                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                                          crossAxisCount: 4),
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final award =
+                                                        user.awards[index];
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: GestureDetector(
+                                                        onTap: () => awardPost(
+                                                            ref,
+                                                            award,
+                                                            context),
+                                                        child: Image.asset(
+                                                            Constants.awards[
+                                                                award]!),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ));
+                                  },
+                                  icon:
+                                      const Icon(Icons.card_giftcard_outlined))
                             ],
                           )
                         ],
@@ -207,7 +306,10 @@ class PostCard extends ConsumerWidget {
               ),
             ],
           ),
-        )
+        ),
+        const SizedBox(
+          height: 10,
+        ),
       ],
     );
   }

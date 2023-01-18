@@ -59,7 +59,16 @@ class AuthRepository {
             uuid: userCredential.user!.uid,
             isAuthenticated: true,
             karma: 0,
-            awards: []);
+            awards: [
+              'awesomeAns',
+              'gold',
+              'platinum',
+              'helpful',
+              'plusone',
+              'rocket',
+              'thankyou',
+              'til',
+            ]);
 
         await _users.doc(userModel.uuid).set(userModel.toMap());
       } else {
@@ -70,6 +79,31 @@ class AuthRepository {
       // if (kDebugMode) {
       //   print(userCredential.user?.email);
       // }
+
+      return right(userModel);
+    } on FirebaseException catch (e) {
+      throw e.message!;
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+//you should first active the signIn anomously method on firebase console (in the authentication section)
+  FutureEither<UserModel> signInAsGuest() async {
+    try {
+      var userCredential = await _auth.signInAnonymously();
+
+      UserModel userModel = UserModel(
+        name: 'Guest',
+        profilePic: Constants.avatarDefault,
+        banner: Constants.bannerDefault,
+        uuid: userCredential.user!.uid,
+        isAuthenticated: false,
+        karma: 0,
+        awards: [],
+      );
+
+      await _users.doc(userCredential.user!.uid).set(userModel.toMap());
 
       return right(userModel);
     } on FirebaseException catch (e) {
