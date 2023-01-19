@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reddit_clone/core/common/error_text.dart';
@@ -9,6 +10,7 @@ import 'package:reddit_clone/core/utils.dart';
 import 'package:reddit_clone/features/community/controller/community_controller.dart';
 import 'package:reddit_clone/features/post/controller/post_controller.dart';
 import 'package:reddit_clone/models/community_model.dart';
+import 'package:reddit_clone/responsive/responsive.dart';
 import 'package:reddit_clone/theme/pallete.dart';
 
 class AddPostTypeScreen extends ConsumerStatefulWidget {
@@ -27,6 +29,7 @@ class _AddPostTypeScreenState extends ConsumerState<AddPostTypeScreen> {
   File? image;
   List<Community> communities = [];
   Community? selectedCommunity;
+  Uint8List? imageWeb;
 
   @override
   void dispose() {
@@ -40,21 +43,29 @@ class _AddPostTypeScreenState extends ConsumerState<AddPostTypeScreen> {
     final res = await pickImage();
 
     if (res != null) {
-      setState(() {
-        image = File(res.files.first.path!);
-      });
+      if (kIsWeb) {
+        setState(() {
+          imageWeb = res.files.first.bytes;
+        });
+      } else {
+        setState(() {
+          image = File(res.files.first.path!);
+        });
+      }
     }
   }
 
   void sharePost() {
     if (widget.type == "image" &&
-        image != null &&
+        (image != null || imageWeb != null) &&
         titleController.text.isNotEmpty) {
       ref.read(postControllerProvider.notifier).shareImagePost(
-          context: context,
-          title: titleController.text.trim(),
-          selectedCommunity: selectedCommunity ?? communities.first,
-          image: image);
+            context: context,
+            title: titleController.text.trim(),
+            selectedCommunity: selectedCommunity ?? communities.first,
+            image: image,
+            imageWeb: imageWeb,
+          );
     } else if (widget.type == "text" && titleController.text.isNotEmpty) {
       ref.read(postControllerProvider.notifier).shareTextPost(
           context: context,
@@ -90,99 +101,103 @@ class _AddPostTypeScreenState extends ConsumerState<AddPostTypeScreen> {
       ]),
       body: isLoading
           ? const Loader()
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: titleController,
-                    maxLength: 30,
-                    decoration: const InputDecoration(
-                        filled: true,
-                        hintText: 'Enter Title here',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.all(18)),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  if (isTypeImage)
-                    GestureDetector(
-                      onTap: () => selectImage(),
-                      child: DottedBorder(
-                        borderType: BorderType.RRect,
-                        radius: const Radius.circular(10),
-                        dashPattern: const [10, 4],
-                        strokeCap: StrokeCap.round,
-                        color: currentTheme.textTheme.bodyText2!.color!,
-                        child: Container(
-                            width: double.infinity,
-                            height: 150,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10)),
-                            child: image != null
-                                ? Image.file(image!)
-                                : const Center(
-                                    child: Icon(
-                                      Icons.camera_alt_outlined,
-                                      size: 40,
-                                    ),
-                                  )),
+          : Responsive(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      maxLength: 30,
+                      decoration: const InputDecoration(
+                          filled: true,
+                          hintText: 'Enter Title here',
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(18)),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    if (isTypeImage)
+                      GestureDetector(
+                        onTap: () => selectImage(),
+                        child: DottedBorder(
+                          borderType: BorderType.RRect,
+                          radius: const Radius.circular(10),
+                          dashPattern: const [10, 4],
+                          strokeCap: StrokeCap.round,
+                          color: currentTheme.textTheme.bodyText2!.color!,
+                          child: Container(
+                              width: double.infinity,
+                              height: 150,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: imageWeb != null
+                                  ? Image.memory(imageWeb!)
+                                  : image != null
+                                      ? Image.file(image!)
+                                      : const Center(
+                                          child: Icon(
+                                            Icons.camera_alt_outlined,
+                                            size: 40,
+                                          ),
+                                        )),
+                        ),
                       ),
+                    if (isTypeText)
+                      TextField(
+                        controller: descriptionController,
+                        maxLines: 5,
+                        decoration: const InputDecoration(
+                            filled: true,
+                            hintText: 'Enter Description here',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.all(18)),
+                      ),
+                    if (isTypeLink)
+                      TextField(
+                        controller: linkController,
+                        decoration: const InputDecoration(
+                            filled: true,
+                            hintText: 'Enter Link here',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.all(18)),
+                      ),
+                    const SizedBox(
+                      height: 20,
                     ),
-                  if (isTypeText)
-                    TextField(
-                      controller: descriptionController,
-                      maxLines: 5,
-                      decoration: const InputDecoration(
-                          filled: true,
-                          hintText: 'Enter Description here',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.all(18)),
+                    const Align(
+                      alignment: Alignment.topLeft,
+                      child: Text('Select Community'),
                     ),
-                  if (isTypeLink)
-                    TextField(
-                      controller: linkController,
-                      decoration: const InputDecoration(
-                          filled: true,
-                          hintText: 'Enter Link here',
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.all(18)),
-                    ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const Align(
-                    alignment: Alignment.topLeft,
-                    child: Text('Select Community'),
-                  ),
-                  ref.watch(userCommunitiesProvider).when(
-                      data: (data) {
-                        communities = data;
+                    ref.watch(userCommunitiesProvider).when(
+                        data: (data) {
+                          communities = data;
 
-                        if (communities.isEmpty) {
-                          return const SizedBox();
-                        }
-                        return DropdownButton(
-                            value: selectedCommunity ?? communities[0],
-                            items: communities
-                                .map(
-                                  (e) => DropdownMenuItem(
-                                    value: e,
-                                    child: Text(e.name),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (val) {
-                              setState(() {
-                                selectedCommunity = val;
+                          if (communities.isEmpty) {
+                            return const SizedBox();
+                          }
+                          return DropdownButton(
+                              value: selectedCommunity ?? communities[0],
+                              items: communities
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e.name),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  selectedCommunity = val;
+                                });
                               });
-                            });
-                      },
-                      error: (error, stackTrace) =>
-                          ErrorText(error: error.toString()),
-                      loading: () => const Loader())
-                ],
+                        },
+                        error: (error, stackTrace) =>
+                            ErrorText(error: error.toString()),
+                        loading: () => const Loader())
+                  ],
+                ),
               ),
             ),
     );

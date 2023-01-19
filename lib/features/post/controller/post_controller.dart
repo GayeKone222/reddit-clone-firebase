@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reddit_clone/core/enums/enums.dart';
@@ -134,7 +135,7 @@ class PostController extends StateNotifier<bool> {
       {required BuildContext context,
       required String title,
       required Community selectedCommunity,
-      required File? image}) async {
+      required File? image, required Uint8List? imageWeb}) async {
     state = true;
 
     String postId = const Uuid().v1();
@@ -142,7 +143,7 @@ class PostController extends StateNotifier<bool> {
 
     //store image to firestorage
     final imageRes = await _storageRepository.storeFile(
-        path: 'post/${selectedCommunity.name}', id: postId, file: image);
+        path: 'post/${selectedCommunity.name}', id: postId, file: image, webFile: imageWeb);
 
     imageRes.fold((l) => showSnackBar(context, l.message), (r) async {
       final Post post = Post(

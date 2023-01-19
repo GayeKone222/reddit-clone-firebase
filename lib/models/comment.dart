@@ -48,12 +48,12 @@ class Comment {
 
   factory Comment.fromMap(Map<String, dynamic> map) {
     return Comment(
-      id: map['id'] as String,
-      text: map['text'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
-      postId: map['postId'] as String,
-      userName: map['userName'] as String,
-      profilePic: map['profilePic'] as String,
+      id: map['id'] ?? '',
+      text: map['text'] ?? '',
+      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] ),
+      postId: map['postId'] ?? '',
+      userName: map['userName'] ?? '',
+      profilePic: map['profilePic'] ?? '',
     );
   }
 

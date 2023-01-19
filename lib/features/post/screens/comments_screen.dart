@@ -7,6 +7,7 @@ import 'package:reddit_clone/features/auth/controller/auth_controller.dart';
 import 'package:reddit_clone/features/post/controller/post_controller.dart';
 import 'package:reddit_clone/features/post/widgets/comment_card.dart';
 import 'package:reddit_clone/models/post_model.dart';
+import 'package:reddit_clone/responsive/responsive.dart';
 
 class CommentsScreen extends ConsumerStatefulWidget {
   const CommentsScreen({super.key, required this.postId});
@@ -45,15 +46,17 @@ class _CommentScreenState extends ConsumerState<CommentsScreen> {
             return Column(
               children: [
                 PostCard(post: post),
-                if(!isGuest)
-                TextField(
-                  onSubmitted: (value) => addComment(post),
-                  controller: commentController,
-                  decoration: const InputDecoration(
-                      filled: true,
-                      border: InputBorder.none,
-                      hintText: "What are your thoughts ?"),
-                ),
+                if (!isGuest)
+                  Responsive(
+                    child: TextField(
+                      onSubmitted: (value) => addComment(post),
+                      controller: commentController,
+                      decoration: const InputDecoration(
+                          filled: true,
+                          border: InputBorder.none,
+                          hintText: "What are your thoughts ?"),
+                    ),
+                  ),
                 ref.watch(getCommentsofPostProvider(widget.postId)).when(
                     data: (comments) {
                       return Expanded(
@@ -61,13 +64,15 @@ class _CommentScreenState extends ConsumerState<CommentsScreen> {
                             itemCount: comments.length,
                             itemBuilder: (BuildContext context, int index) {
                               final comment = comments[index];
-                      
+
                               return CommentCard(comment: comment);
                             }),
                       );
                     },
-                    error: (error, stackTrace) =>
-                        ErrorText(error: error.toString()),
+                    error: (error, stackTrace) {
+                      print(error.toString());
+                      return ErrorText(error: error.toString());
+                    },
                     loading: () => const Loader())
               ],
             );

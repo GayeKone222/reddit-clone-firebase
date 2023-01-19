@@ -23,6 +23,7 @@ class CommunityListDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider)!;
     final isGuest = !user.isAuthenticated;
+    print('isGuest : $isGuest');
     return Drawer(
       child: SafeArea(
           child: Column(

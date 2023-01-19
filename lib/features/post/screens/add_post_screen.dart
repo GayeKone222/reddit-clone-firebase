@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reddit_clone/theme/pallete.dart';
@@ -13,8 +14,9 @@ class AddPostScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentTheme = ref.watch(themeNotifierProvider);
-    double cardHeighWidth = 120;
-    double iconSize = 60;
+    double cardHeighWidth =kIsWeb ? 360 : 120;
+    double iconSize =kIsWeb ? 120 : 60;
+    
     return Scaffold(
       body: SafeArea(
         child: Row(

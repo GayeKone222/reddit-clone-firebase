@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
@@ -27,12 +28,9 @@ final userCommunitiesProvider = StreamProvider(
   },
 );
 
-
-
 final searchCommunityProvider = StreamProvider.family((ref, String query) {
   return ref.watch(communityControllerProvider.notifier).searchCommunity(query);
 });
-
 
 final communityControllerProvider =
     StateNotifierProvider<CommunityController, bool>((ref) {
@@ -44,12 +42,12 @@ final communityControllerProvider =
       storageRepository: storageRepository);
 });
 
-
-
-final getCommunityPostsProvider = StreamProvider.family((ref, String communityName) {
-  return ref.read(communityControllerProvider.notifier).getCommunityPosts(communityName);
+final getCommunityPostsProvider =
+    StreamProvider.family((ref, String communityName) {
+  return ref
+      .read(communityControllerProvider.notifier)
+      .getCommunityPosts(communityName);
 });
-
 
 class CommunityController extends StateNotifier<bool> {
   final CommunityRepository _communityRepository;
@@ -97,22 +95,30 @@ class CommunityController extends StateNotifier<bool> {
   void editCommunity(
       {required File? bannerFile,
       required File? avatarFile,
+      required Uint8List? bannerWebFile,
+      required Uint8List? avatarWebFile,
       required BuildContext context,
       required Community community}) async {
     state = true;
     //store file if not null
-    if (avatarFile != null) {
+    if (avatarFile != null || avatarWebFile != null) {
       // communities/profile/tiktok
       final res = await _storageRepository.storeFile(
-          path: 'communities/profile', id: community.name, file: avatarFile);
+          path: 'communities/profile',
+          id: community.name,
+          file: avatarFile,
+          webFile: avatarWebFile);
       res.fold((l) => showSnackBar(context, l.message),
           (avatarUrl) => community = community.copyWith(avatar: avatarUrl));
     }
 
     //store file if not null
-    if (bannerFile != null) {
+    if (bannerFile != null || bannerWebFile != null) {
       final res = await _storageRepository.storeFile(
-          path: 'communities/banner', id: community.name, file: bannerFile);
+          path: 'communities/banner',
+          id: community.name,
+          file: bannerFile,
+          webFile: bannerWebFile);
 
       res.fold((l) => showSnackBar(context, l.message),
           (bannerUrl) => community = community.copyWith(banner: bannerUrl));
@@ -160,7 +166,7 @@ class CommunityController extends StateNotifier<bool> {
     return _communityRepository.searchCommunity(query);
   }
 
-    Stream<List<Post>> getCommunityPosts(String communityName) {
+  Stream<List<Post>> getCommunityPosts(String communityName) {
     return _communityRepository.getCommunityposts(communityName);
   }
 }

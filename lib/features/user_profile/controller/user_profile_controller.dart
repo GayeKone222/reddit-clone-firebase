@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reddit_clone/core/enums/enums.dart';
@@ -42,23 +43,25 @@ class UserProfileController extends StateNotifier<bool> {
   void editUserProfile(
       {required File? bannerFile,
       required File? avatarFile,
+      required Uint8List? bannerWebFile,
+      required Uint8List? avatarWebFile,
       required BuildContext context,
       required String name}) async {
     state = true;
     UserModel user = _ref.read(userProvider)!;
     //store file if not null
-    if (avatarFile != null) {
+    if (avatarFile != null  || avatarWebFile != null) {
       // communities/profile/tiktok
       final res = await _storageRepository.storeFile(
-          path: 'users/profile', id: user.uuid, file: avatarFile);
+          path: 'users/profile', id: user.uuid, file: avatarFile, webFile: avatarWebFile);
       res.fold((l) => showSnackBar(context, l.message),
           (avatarUrl) => user = user.copyWith(profilePic: avatarUrl));
     }
 
     //store file if not null
-    if (bannerFile != null) {
+    if (bannerFile != null|| bannerWebFile != null) {
       final res = await _storageRepository.storeFile(
-          path: 'users/banner', id: user.uuid, file: bannerFile);
+          path: 'users/banner', id: user.uuid, file: bannerFile,webFile: bannerWebFile);
 
       res.fold((l) => showSnackBar(context, l.message),
           (bannerUrl) => user = user.copyWith(banner: bannerUrl));

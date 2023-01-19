@@ -73,7 +73,7 @@ class CommunityScreen extends ConsumerWidget {
                                   fontSize: 19, fontWeight: FontWeight.bold),
                             ),
                             if(!isGuest)
-                            community.mods.contains(user!.uuid)
+                            community.mods.contains(user.uuid)
                                 ? OutlinedButton(
                                     style: ElevatedButton.styleFrom(
                                         shape: RoundedRectangleBorder(
@@ -94,7 +94,7 @@ class CommunityScreen extends ConsumerWidget {
                                     onPressed: () =>
                                         joinCommunity(ref, community, context),
                                     child: Text(
-                                        community.members.contains(user!.uuid)
+                                        community.members.contains(user.uuid)
                                             ? 'Joined'
                                             : 'Join'))
                           ],

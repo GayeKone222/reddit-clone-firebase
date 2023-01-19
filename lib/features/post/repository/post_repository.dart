@@ -109,7 +109,7 @@ class PostRepository {
     return _posts
         .doc(postId)
         .snapshots()
-        .map((event) => Post.fromMap(event.data as Map<String, dynamic>));
+        .map((event) => Post.fromMap(event.data() as Map<String, dynamic>));
   }
 
   FutureVoid addComment(Comment comment) async {
