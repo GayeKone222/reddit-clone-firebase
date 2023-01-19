@@ -41,6 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider)!;
     final curentTheme = ref.watch(themeNotifierProvider);
+    final isGuest = !user.isAuthenticated;
 
     return Scaffold(
       appBar: AppBar(
@@ -69,8 +70,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       drawer: const CommunityListDrawer(),
-      endDrawer: const ProfileDrawer(),
-      bottomNavigationBar: CupertinoTabBar(
+      endDrawer:isGuest? null : const ProfileDrawer(),
+      bottomNavigationBar:isGuest? null : CupertinoTabBar(
         activeColor: curentTheme.iconTheme.color,
         backgroundColor: curentTheme.backgroundColor,
         items: const [
@@ -87,65 +88,3 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
-
-// class HomeScreen extends ConsumerWidget {
-//   const HomeScreen({super.key});
-
-//   void displayDrawer(BuildContext context) {
-//     Scaffold.of(context).openDrawer();
-//   }
-
-//   void displayEndDrawer(BuildContext context) {
-//     Scaffold.of(context).openEndDrawer();
-//   }
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final user = ref.watch(userProvider)!;
-//     final curentTheme = ref.watch(themeNotifierProvider);
-
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('home'),
-//         centerTitle: false,
-//         leading: Builder(builder: (context) {
-//           return IconButton(
-//             icon: const Icon(Icons.menu),
-//             onPressed: () => displayDrawer(context),
-//           );
-//         }),
-//         actions: [
-//           IconButton(
-//               onPressed: () => showSearch(
-//                   context: context, delegate: SearchCommunityDelegate(ref)),
-//               icon: const Icon(
-//                 Icons.search,
-//               )),
-//           Builder(builder: (context) {
-//             return IconButton(
-//                 onPressed: () => displayEndDrawer(context),
-//                 icon: CircleAvatar(
-//                   backgroundImage: NetworkImage(user.profilePic),
-//                 ));
-//           })
-//         ],
-//       ),
-//       drawer: const CommunityListDrawer(),
-//       endDrawer: const ProfileDrawer(),
-//       bottomNavigationBar: CupertinoTabBar(
-//         activeColor: curentTheme.iconTheme.color,
-//         backgroundColor: curentTheme.backgroundColor,
-//         items: const [
-//           BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-//           BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
-//         ],
-//         onTap: (value) {
-          
-//         },
-//       ),
-//       body: Center(
-//         child: Text(user.name),
-//       ),
-//     );
-//   }
-// }

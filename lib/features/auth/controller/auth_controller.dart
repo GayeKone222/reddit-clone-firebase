@@ -47,9 +47,9 @@ class AuthController extends StateNotifier<bool> {
     return _authRepository.getuserData(uuid);
   }
 
-  void signInWithGoogle(BuildContext context) async {
+  void signInWithGoogle(BuildContext context, bool isFromLogin) async {
     state = true;
-    final user = await _authRepository.signInWithGoogle();
+    final user = await _authRepository.signInWithGoogle(isFromLogin);
     state = false;
     //update the user model value if succes
     user.fold(
