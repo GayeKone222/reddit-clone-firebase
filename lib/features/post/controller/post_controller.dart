@@ -19,6 +19,10 @@ final userPostsProvider =
   return ref.watch(postControllerProvider.notifier).fetchUserPosts(communities);
 });
 
+final guestPostsProvider = StreamProvider((ref) {
+  return ref.watch(postControllerProvider.notifier).fetchGuestPosts();
+});
+
 final getPostByIdProvider = StreamProvider.family((ref, String postId) {
   return ref.watch(postControllerProvider.notifier).getPostById(postId);
 });
@@ -175,6 +179,10 @@ class PostController extends StateNotifier<bool> {
       return _postRepository.fetchUserPosts(communities);
     }
     return Stream.value([]);
+  }
+
+  Stream<List<Post>> fetchGuestPosts() {
+    return _postRepository.fetchGuestPosts();
   }
 
   void deletePost(Post post, BuildContext context) async {
